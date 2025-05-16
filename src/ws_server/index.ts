@@ -12,12 +12,13 @@ wss.on('listening', () => {
 wss.on('connection', (ws: WebSocket) => {
     ws.on('message', (json) => {
       try {
+        console.log(`Request: ${json}`)
         const { type, data } = JSON.parse(json.toString())
         console.log('type', type)
         console.log('type', data)
         switch (type) {
             case 'reg':
-                handlers.reg(data, ws)
+                handlers.reg(data, ws, type)
                 console.log('reg')
                 break
             case 'create_room':
