@@ -1,4 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws'
+import handlers from './handlers/'
 
 const port = process.env.WS_PORT || 3000
 
@@ -9,8 +10,37 @@ wss.on('listening', () => {
 })
 
 wss.on('connection', (ws: WebSocket) => {
-    ws.on('message', (data) => {
-      console.log('received: %s', data)
+    ws.on('message', (json) => {
+      try {
+        const { type, data } = JSON.parse(json.toString())
+        console.log('type', type)
+        console.log('type', data)
+        switch (type) {
+            case 'reg':
+                handlers.reg(data, ws)
+                console.log('reg')
+                break
+            case 'create_room':
+                console.log('create_room')
+                break
+            case 'add_user_to_room':
+                console.log('add_user_to_room')
+                break
+            case 'add_ships':
+                console.log('add_ships')
+                break
+            case 'attack':
+                console.log('attack')
+                break
+            case 'randomAttack':
+                console.log('randomAttack')
+                break
+            default:
+                console.log('Unknown command')
+        }
+      } catch (error) {
+        console.error('Error!')
+      }
     })
 
     ws.on('error', () => {
