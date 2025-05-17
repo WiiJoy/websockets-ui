@@ -69,6 +69,7 @@ const handleGameData = (idGame: string, player: string, data: IPlayerData) => {
     } else {
         dbGames.push({
             idGame,
+            currentPlayer: player,
             playersData: [{
                 index: player,
                 data
@@ -88,5 +89,9 @@ const handleStartGame = (game: IGame) => {
         }
 
         currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.startGame))
+
+        // if (i === 0) {
+            currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:0}), MessageType.startGame))
+        // }
     })
 }

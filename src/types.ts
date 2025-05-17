@@ -48,6 +48,7 @@ export interface IPlayerGame {
 
 export interface IGame {
     idGame: string;
+    currentPlayer: string;
     playersData: IPlayerGame[]
 }
 
@@ -56,5 +57,6 @@ export enum MessageType {
     updWinners = 'update_winners',
     updRooms = 'update_room',
     createGame = 'create_game',
-    startGame = 'start_game'
+    startGame = 'start_game',
+    turn = 'turn'
 }
