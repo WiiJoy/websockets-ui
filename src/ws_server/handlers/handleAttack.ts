@@ -88,19 +88,18 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
 
             game.playersData.forEach((player) => {
                 const currPlayer = dbUsers.find(user => user.index === player.index)
-                // if (!currPlayer) return
                 currPlayer?.socket?.send(messageWrap(JSON.stringify(data), MessageType.attack))
             })
         }
     }
 
-    enemyData.data.count -= 1
+    enemyData.data.count += -1 
 
-    if (enemyData.data.count = 0) {
+    if (enemyData.data.count === 0) {
+        console.log('set finish', current)
         game.playersData.forEach((player) => {
             const currPlayer = dbUsers.find(user => user.index === player.index)
-            // if (!currPlayer) return
-            currPlayer?.socket?.send(messageWrap(JSON.stringify({winPlayer:current}), MessageType.attack))
+            currPlayer?.socket?.send(messageWrap(JSON.stringify({winPlayer:current}), MessageType.finish))
         })
     }
 }
