@@ -43,7 +43,7 @@ export const addShips = (data: string) => {
     })
 
     let field: Array<Array<string|number>> = Array.from({ length: 10 }, (_v, k) => Array.from({ length: 10 }, (_n, i) => {
-        const indexOfShip = tempShips.find((ship: [number, number, string]) => ship[0] === i && ship[1] === k)
+        const indexOfShip = tempShips.find((ship: [number, number, string]) => ship[0] === k && ship[1] === i)
 
         if (indexOfShip) {
             return indexOfShip[2]
@@ -91,7 +91,7 @@ const handleStartGame = (game: IGame) => {
         currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.startGame))
 
         // if (i === 0) {
-            currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:0}), MessageType.startGame))
+            currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:currPlayer.index}), MessageType.turn))
         // }
     })
 }

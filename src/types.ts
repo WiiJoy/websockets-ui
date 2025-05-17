@@ -47,9 +47,22 @@ export interface IPlayerGame {
 }
 
 export interface IGame {
-    idGame: string;
-    currentPlayer: string;
+    idGame: string,
+    currentPlayer: string,
     playersData: IPlayerGame[]
+}
+
+export interface IAttack {
+    x: number,
+    y: number,
+    gameId: string,
+    indexPlayer: string
+}
+
+export interface IAttackFeedback {
+    position: IPosition,
+    currentPlayer: string,
+    status: "miss"|"killed"|"shot",
 }
 
 export enum MessageType {
@@ -58,5 +71,7 @@ export enum MessageType {
     updRooms = 'update_room',
     createGame = 'create_game',
     startGame = 'start_game',
-    turn = 'turn'
+    turn = 'turn',
+    attack = 'attack',
+    finish = 'finish'
 }

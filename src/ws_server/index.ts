@@ -30,6 +30,7 @@ wss.on('connection', (ws: WebSocket) => {
                 break
             case 'attack':
                 console.log('attack')
+                handlers.attack(data)
                 break
             case 'randomAttack':
                 console.log('randomAttack')
