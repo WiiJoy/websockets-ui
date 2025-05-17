@@ -26,6 +26,7 @@ wss.on('connection', (ws: WebSocket) => {
                 break
             case 'add_ships':
                 console.log('add_ships')
+                handlers.addShips(data)
                 break
             case 'attack':
                 console.log('attack')
