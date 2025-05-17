@@ -1,3 +1,4 @@
+import "tsconfig-paths/register"
 import { httpServer } from './src/http_server/';
 import './src/ws_server/'
 
