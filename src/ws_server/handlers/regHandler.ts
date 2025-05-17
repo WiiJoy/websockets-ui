@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
-import { IUser } from '@/types'
-import { dbUsers } from '@/db'
+import { IUser, MessageType } from '#/types'
+import { dbUsers, dbWinners, dbRooms } from '#/db'
 import { WebSocket } from 'ws'
-import { messageWrap } from '@/utils/messageUtils'
-import { prepareUser } from '@/utils/prepareData'
+import { messageWrap } from '#/utils/messageUtils'
+import { prepareUser } from '#/utils/prepareData'
 
 export const reg = (data: string, ws: WebSocket, type: string) => {
     const { name, password } = JSON.parse(data)
@@ -17,5 +17,6 @@ export const reg = (data: string, ws: WebSocket, type: string) => {
     dbUsers.push(user)
 
     ws.send(messageWrap(JSON.stringify(prepareUser(name, id)), type))
-    console.log('This is user!', user)
+    ws.send(messageWrap(JSON.stringify(dbWinners.sort((a, b) => a.wins - b.wins)), MessageType.updWinners))
+    ws.send(messageWrap(JSON.stringify(dbRooms), MessageType.updRooms))
 }
