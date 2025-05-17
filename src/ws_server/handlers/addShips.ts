@@ -66,6 +66,7 @@ const handleGameData = (idGame: string, player: string, data: IPlayerData) => {
             data
         })
         handleStartGame(currentGame)
+        handleSetTurn(currentGame)
     } else {
         dbGames.push({
             idGame,
@@ -90,8 +91,13 @@ const handleStartGame = (game: IGame) => {
 
         currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.startGame))
 
-        // if (i === 0) {
-            currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:currPlayer.index}), MessageType.turn))
-        // }
+        // currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:currPlayer.index}), MessageType.turn))
+    })
+}
+
+const handleSetTurn = (game: IGame) => {
+    game.playersData.forEach((player) => {
+        const currPlayer = dbUsers.find(user => user.index === player.index)
+        currPlayer?.socket?.send(messageWrap(JSON.stringify({currentPlayer:game.currentPlayer}), MessageType.turn))
     })
 }
