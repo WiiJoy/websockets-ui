@@ -1,5 +1,5 @@
-import { IUser, IWinner } from "#/types";
+import { IUser, IWinner, IRoomUsers } from "#/types";
 
 export const dbUsers: IUser[] = []
 export const dbWinners: IWinner[] = []
-export const dbRooms = []
+export const dbRooms: IRoomUsers[] = []

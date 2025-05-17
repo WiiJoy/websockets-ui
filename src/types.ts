@@ -1,7 +1,10 @@
+import { WebSocket } from "ws"
+
 export interface IUser {
     name: string,
     index: string,
     password?: string,
+    socket?: WebSocket | null
 }
 
 export interface IWinner {
@@ -17,5 +20,6 @@ export interface IRoomUsers {
 export enum MessageType {
     reg = 'reg',
     updWinners = 'update_winners',
-    updRooms = 'update_room'
+    updRooms = 'update_room',
+    createGame = 'create_game'
 }

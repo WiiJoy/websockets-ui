@@ -11,7 +11,8 @@ export const reg = (data: string, ws: WebSocket, type: string) => {
     const user: IUser = {
         name,
         password,
-        index: id
+        index: id,
+        socket: ws
     }
 
     dbUsers.push(user)

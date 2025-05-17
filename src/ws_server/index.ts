@@ -14,18 +14,15 @@ wss.on('connection', (ws: WebSocket) => {
       try {
         console.log(`Request: ${json}`)
         const { type, data } = JSON.parse(json.toString())
-        console.log('type', type)
-        console.log('type', data)
         switch (type) {
             case 'reg':
                 handlers.reg(data, ws, type)
-                console.log('reg')
                 break
             case 'create_room':
-                console.log('create_room')
+                handlers.createRoom(ws)
                 break
             case 'add_user_to_room':
-                console.log('add_user_to_room')
+                handlers.addUser(data, ws)
                 break
             case 'add_ships':
                 console.log('add_ships')
