@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { IShip, IPlayerData, IShipData, IGame, MessageType } from '#/types'
+import { IShip, IPlayerData, IShipData, IGame, IPlayerGame, MessageType } from '#/types'
 import { dbGames, dbUsers } from '#/db'
 import { messageWrap } from '#/utils/messageUtils'
 
@@ -59,22 +59,23 @@ export const addShips = (data: string) => {
 
 const handleGameData = (idGame: string, player: string, data: IPlayerData) => {
     const currentGame = dbGames.find(game => game.idGame === idGame)
+    const currUser = dbUsers.find(user => user.index === player)
+
+    const playerData: IPlayerGame = {
+        index: player,
+        name: currUser?.name || '',
+        data
+    }
 
     if (currentGame) {
-        currentGame.playersData.push({
-            index: player,
-            data
-        })
+        currentGame.playersData.push(playerData)
         handleStartGame(currentGame)
         handleSetTurn(currentGame)
     } else {
         dbGames.push({
             idGame,
             currentPlayer: player,
-            playersData: [{
-                index: player,
-                data
-            }]
+            playersData: [playerData]
         })
     }
 }

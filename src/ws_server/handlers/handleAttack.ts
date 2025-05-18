@@ -1,5 +1,5 @@
 import { IAttack, IGame, MessageType, IPlayerGame } from "#/types"
-import { dbGames, dbUsers } from "#/db"
+import { dbGames, dbUsers, dbWinners } from "#/db"
 import { messageWrap } from "#/utils/messageUtils"
 
 export const attack = (data: string) => {
@@ -17,13 +17,13 @@ export const attack = (data: string) => {
     const target = rowData[attackData.y]
     console.log('target', target)
     if (typeof target === "string") {
-        requestMiss(currGame, attackData.x, attackData.y, attackData.indexPlayer, false, enemyData, target)
+        handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, false, enemyData, target)
     } else {
-        requestMiss(currGame, attackData.x, attackData.y, attackData.indexPlayer, true, enemyData)
+        handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, true, enemyData)
     }
 }
 
-const requestMiss = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, target?: string) => {
+const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, target?: string) => {
     const status = isMiss ? 'miss' : checkStatus(enemyData, target as string)
 
     const data = {
@@ -97,9 +97,29 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
 
     if (enemyData.data.count === 0) {
         console.log('set finish', current)
+        let winner: string = ''
         game.playersData.forEach((player) => {
             const currPlayer = dbUsers.find(user => user.index === player.index)
+            if (currPlayer?.index === current) winner = currPlayer.name
             currPlayer?.socket?.send(messageWrap(JSON.stringify({winPlayer:current}), MessageType.finish))
         })
+        handleWinners(winner)
     }
+}
+
+const handleWinners = (winner: string ) => {
+    const winnerInList = dbWinners.find(user => user.name === winner)
+
+    if (!winnerInList) {
+        dbWinners.push({
+            name: winner,
+            wins: 1
+        })
+    } else {
+        winnerInList.wins += 1
+    }
+
+    dbUsers.forEach(user => {
+        user.socket?.send(messageWrap(JSON.stringify(dbWinners.sort((a, b) => a.wins - b.wins)), MessageType.updWinners))
+    })
 }
