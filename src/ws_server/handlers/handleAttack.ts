@@ -24,6 +24,40 @@ export const attack = (data: string) => {
     rowData[attackData.y] = 1
 }
 
+export const randomAttack = (data: string) => {
+    const attackData: {
+        gameId: string,
+        indexPlayer: string
+    } = JSON.parse(data)
+
+    const currGame = dbGames.find(game => game.idGame === attackData.gameId)
+    if (!currGame) return
+
+    const enemyData = currGame.playersData.find(player => player.index !== attackData.indexPlayer)
+    if (!enemyData) return
+
+    let x = 0
+    let y = 0
+
+    let rowData = enemyData.data.field[x] as (string|number)[]
+
+    let target = rowData[y]
+
+    do {
+        x = Math.floor(Math.random() * 10)
+        y = Math.floor(Math.random() * 10)
+        rowData = enemyData.data.field[x] as (string|number)[]
+        target = rowData[y]
+    } while (target === 1);
+
+    if (typeof target === "string") {
+        handleShot(currGame, x, y, attackData.indexPlayer, false, enemyData, target)
+    } else {
+        handleShot(currGame, x, y, attackData.indexPlayer, true, enemyData)
+    }
+    rowData[y] = 1
+}
+
 const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, target?: string) => {
     const status = isMiss ? 'miss' : checkStatus(enemyData, target as string)
 
