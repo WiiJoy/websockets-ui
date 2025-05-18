@@ -8,24 +8,32 @@ export const addUser = (data: string, ws: WebSocket) => {
     const roomId: string = JSON.parse(data).indexRoom
 
     const gameRoom = dbRooms.find(room => room.roomId === roomId)
+    const roomIndex = dbRooms.findIndex(room => room.roomId === roomId)
     const currUser = dbUsers.find(user => user.socket && user.socket === ws)
 
-    if (!gameRoom || !currUser) return
+    if (!gameRoom || roomIndex < 0 || !currUser) return
 
     gameRoom.roomUsers.push({
         name: currUser.name,
         index: currUser.index,
     })
 
-    const idGame = uuidv4()
+    if (gameRoom.roomUsers.length === 2) {
+        const idGame = uuidv4()
 
-    gameRoom.roomUsers.forEach((user) => {
-        const player = dbUsers.find(item => item.index === user.index)
-        if (!player) return
-        const playerData = {
-            idPlayer: player.index,
-            idGame
-        }
-        player?.socket?.send(messageWrap(JSON.stringify(playerData), MessageType.createGame))
-    })
+        gameRoom.roomUsers.forEach((user) => {
+            const player = dbUsers.find(item => item.index === user.index)
+            if (!player) return
+            const playerData = {
+                idPlayer: player.index,
+                idGame
+            }
+            player?.socket?.send(messageWrap(JSON.stringify(playerData), MessageType.createGame))
+        })
+
+        dbUsers.splice(roomIndex, 1)
+        dbUsers.forEach(user => {
+            user.socket?.send(messageWrap(JSON.stringify(dbRooms), MessageType.updRooms))
+        })
+    }
 }
