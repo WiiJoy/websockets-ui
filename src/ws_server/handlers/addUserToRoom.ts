@@ -13,6 +13,9 @@ export const addUser = (data: string, ws: WebSocket) => {
 
     if (!gameRoom || roomIndex < 0 || !currUser) return
 
+    const isInRoom = gameRoom.roomUsers.find(user => user.index === currUser.index)
+    if (isInRoom) return
+
     gameRoom.roomUsers.push({
         name: currUser.name,
         index: currUser.index,

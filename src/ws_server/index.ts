@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import handlers from './handlers/'
+import { dbUsers } from '#/db'
 
 const port = process.env.WS_PORT || 3000
 
@@ -48,6 +49,9 @@ wss.on('connection', (ws: WebSocket) => {
     })
 
     ws.on('close', () => {
+        const disconnectedUser = dbUsers.find(user => user.socket === ws)
+        if (!disconnectedUser) return
+        disconnectedUser.socket = null
         console.log('Disconnected!')
     })
 })
