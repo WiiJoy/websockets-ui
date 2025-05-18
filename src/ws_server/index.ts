@@ -26,17 +26,16 @@ wss.on('connection', (ws: WebSocket) => {
                 handlers.addUser(data, ws)
                 break
             case 'add_ships':
-                console.log('add_ships')
                 handlers.addShips(data)
                 break
             case 'attack':
-                console.log('attack')
                 handlers.attack(data)
                 break
             case 'randomAttack':
-                console.log('randomAttack')
                 handlers.randomAttack(data)
                 break
+            case 'single_play':
+                console.log('Single game is not exist')
             default:
                 console.log('Unknown command')
         }
