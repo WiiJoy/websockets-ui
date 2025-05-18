@@ -34,7 +34,7 @@ export const addUser = (data: string, ws: WebSocket) => {
             player?.socket?.send(messageWrap(JSON.stringify(playerData), MessageType.createGame))
         })
 
-        dbUsers.splice(roomIndex, 1)
+        dbRooms.splice(roomIndex, 1)
         dbUsers.forEach(user => {
             user.socket?.send(messageWrap(JSON.stringify(dbRooms), MessageType.updRooms))
         })

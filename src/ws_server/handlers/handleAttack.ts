@@ -70,12 +70,17 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
     let endPosX = posX
     let endPosY = posY
 
+    let shipXPos: [number, number] = [posX, posX]
+    let shipYPos: [number, number] = [posY, posY]
+
     if (currShip.direction) {
         endPosX = posX + 1 === 10 ? posX : posX + 1
         endPosY = posY + length === 10 ? posY + length - 1 : posY + length
+        shipYPos[1] = posY + length - 1
     } else {
         endPosX = posX + length === 10 ? posX + length - 1 : posX + length
         endPosY = posY + 1 === 10 ? posY  : posY + 1
+        shipXPos[1] = posX + length - 1
     }
 
     for (let i = startPosY; i <= endPosY; i++) {
@@ -83,7 +88,7 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
             const data = {
                 position: { x:k, y:i },
                 currentPlayer: current,
-                status: 'miss'
+                status: checkIsShipPosition(shipXPos, shipYPos, k, i) ? 'killed' : 'miss'
             }
 
             game.playersData.forEach((player) => {
@@ -122,4 +127,11 @@ const handleWinners = (winner: string ) => {
     dbUsers.forEach(user => {
         user.socket?.send(messageWrap(JSON.stringify(dbWinners.sort((a, b) => a.wins - b.wins)), MessageType.updWinners))
     })
+}
+
+const checkIsShipPosition = (shipX: [number, number], shipY: [number, number], x:number, y:number): boolean => {
+    const checkX = x >= shipX[0] && x <= shipX[1]
+    const checkY = y >= shipY[0] && y <= shipY[1]
+
+    return checkX && checkY
 }

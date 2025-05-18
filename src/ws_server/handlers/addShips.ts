@@ -59,11 +59,9 @@ export const addShips = (data: string) => {
 
 const handleGameData = (idGame: string, player: string, data: IPlayerData) => {
     const currentGame = dbGames.find(game => game.idGame === idGame)
-    const currUser = dbUsers.find(user => user.index === player)
 
     const playerData: IPlayerGame = {
         index: player,
-        name: currUser?.name || '',
         data
     }
 
@@ -91,8 +89,6 @@ const handleStartGame = (game: IGame) => {
         }
 
         currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.startGame))
-
-        // currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:currPlayer.index}), MessageType.turn))
     })
 }
 

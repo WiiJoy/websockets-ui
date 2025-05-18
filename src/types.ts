@@ -43,7 +43,6 @@ export interface IShip extends IShipData {
 
 export interface IPlayerGame {
     index: string,
-    name: string,
     data: IPlayerData
 }
 
