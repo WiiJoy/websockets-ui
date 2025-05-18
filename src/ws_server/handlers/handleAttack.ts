@@ -21,6 +21,7 @@ export const attack = (data: string) => {
     } else {
         handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, true, enemyData)
     }
+    rowData[attackData.y] = 1
 }
 
 const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, target?: string) => {
@@ -36,9 +37,13 @@ const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: 
         if (!currPlayer) return
 
         currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.attack))
-        if (isMiss) currPlayer.socket?.send(messageWrap(JSON.stringify({currentPlayer:enemyData.index}), MessageType.turn))
     })
     if (status === 'killed') killedHandle(enemyData, target as string, current, game)
+    if (isMiss) {
+        game.currentPlayer = enemyData.index
+    }
+    handleSetTurn(game)
+    
 }
 
 const checkStatus = (enemyData: IPlayerGame, target: string) => {
@@ -134,4 +139,11 @@ const checkIsShipPosition = (shipX: [number, number], shipY: [number, number], x
     const checkY = y >= shipY[0] && y <= shipY[1]
 
     return checkX && checkY
+}
+
+const handleSetTurn = (game: IGame) => {
+    game.playersData.forEach((player) => {
+        const currPlayer = dbUsers.find(user => user.index === player.index)
+        currPlayer?.socket?.send(messageWrap(JSON.stringify({currentPlayer:game.currentPlayer}), MessageType.turn))
+    })
 }
