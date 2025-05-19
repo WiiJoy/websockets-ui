@@ -1,4 +1,4 @@
-import { IAttack, IGame, MessageType, IPlayerGame } from "#/types"
+import { IAttack, IGame, MessageType, StatusType, IPlayerGame } from "#/types"
 import { dbGames, dbUsers, dbWinners } from "#/db"
 import { messageWrap } from "#/utils/messageUtils"
 
@@ -17,11 +17,11 @@ export const attack = (data: string) => {
     const target = rowData[attackData.y]
     console.log('target', target)
     if (typeof target === "string") {
-        handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, false, enemyData, target)
+        handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, false, enemyData, rowData)
     } else {
-        handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, true, enemyData)
+        handleShot(currGame, attackData.x, attackData.y, attackData.indexPlayer, true, enemyData, rowData)
+        rowData[attackData.y] = rowData[attackData.y] === 0 ? 1 : rowData[attackData.y] as number
     }
-    rowData[attackData.y] = 1
 }
 
 export const randomAttack = (data: string) => {
@@ -48,18 +48,19 @@ export const randomAttack = (data: string) => {
         y = Math.floor(Math.random() * 10)
         rowData = enemyData.data.field[x] as (string|number)[]
         target = rowData[y]
-    } while (target === 1);
+        console.log('check2', target)
+    } while (!(target === 0 || typeof target === "string")); //target === 1 || target === 2 || target === 3
 
     if (typeof target === "string") {
-        handleShot(currGame, x, y, attackData.indexPlayer, false, enemyData, target)
+        handleShot(currGame, x, y, attackData.indexPlayer, false, enemyData, rowData)
     } else {
-        handleShot(currGame, x, y, attackData.indexPlayer, true, enemyData)
+        handleShot(currGame, x, y, attackData.indexPlayer, true, enemyData, rowData)
+        rowData[y] = rowData[y] === 0 ? 1 : rowData[y] as number
     }
-    rowData[y] = 1
 }
 
-const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, target?: string) => {
-    const status = isMiss ? 'miss' : checkStatus(enemyData, target as string)
+const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, rowData: (string|number)[]) => {
+    const status = isMiss ? setMissStatus(rowData[y] as number) : checkStatus(enemyData, rowData[y] as string)
 
     const data = {
         position: { x, y },
@@ -72,18 +73,19 @@ const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: 
 
         currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.attack))
     })
-    if (status === 'killed') killedHandle(enemyData, target as string, current, game)
+    
     if (isMiss) {
         game.currentPlayer = enemyData.index
+    } else {
+        if (status === 'shot') rowData[y] = 2
+        if (status === 'killed') killedHandle(enemyData, rowData[y] as string, current, game)
     }
     handleSetTurn(game)
-    
 }
 
 const checkStatus = (enemyData: IPlayerGame, target: string) => {
     const shipList = enemyData.data.ships
     const currShip = shipList.find(ship => ship.index === target)
-    console.log('checkStatus', currShip)
     if (!currShip) return 'miss'
     currShip.count -= 1
 
@@ -92,6 +94,14 @@ const checkStatus = (enemyData: IPlayerGame, target: string) => {
     }
 
     return 'killed'
+}
+
+const setMissStatus = (value: number) => {
+    if (!value) {
+        return 'miss'
+    } else {
+        return StatusType[value]
+    }
 }
 
 const killedHandle = (enemyData: IPlayerGame, target: string, current: string, game: IGame) => {
@@ -132,9 +142,12 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
                 status: isOnShip ? 'killed' : 'miss'
             }
 
+            const rowData = enemyData.data.field[k] as (string|number)[]
+
             if (!isOnShip) {
-                const rowData = enemyData.data.field[k] as (string|number)[]
                 rowData[i] = 1
+            } else {
+                rowData[i] = 3
             }
 
             game.playersData.forEach((player) => {

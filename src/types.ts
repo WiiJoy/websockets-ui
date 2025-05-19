@@ -75,3 +75,5 @@ export enum MessageType {
     attack = 'attack',
     finish = 'finish'
 }
+
+export enum StatusType { miss=1, shot=2, killed=3 }
