@@ -7,7 +7,7 @@ export const attack = (data: string) => {
     const attackData: IAttack = JSON.parse(data)
 
     const currGame = dbGames.find(game => game.idGame === attackData.gameId)
-    if (!currGame) return
+    if (!currGame || currGame.currentPlayer !== attackData.indexPlayer) return
 
     const enemyData = currGame.playersData.find(player => player.index !== attackData.indexPlayer)
     if (!enemyData) return
@@ -31,7 +31,7 @@ export const randomAttack = (data: string) => {
     } = JSON.parse(data)
 
     const currGame = dbGames.find(game => game.idGame === attackData.gameId)
-    if (!currGame) return
+    if (!currGame || currGame.currentPlayer !== attackData.indexPlayer) return
 
     const enemyData = currGame.playersData.find(player => player.index !== attackData.indexPlayer)
     if (!enemyData) return
