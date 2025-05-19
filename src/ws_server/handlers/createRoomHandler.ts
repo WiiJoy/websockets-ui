@@ -1,8 +1,8 @@
 import { dbUsers, dbRooms } from "#/db"
 import { v4 as uuidv4 } from 'uuid'
 import { WebSocket } from "ws"
-import { messageWrap } from "#/utils/messageUtils"
-import { MessageType } from "#/types"
+import { updateRoomsList } from "#/utils/messageUtils"
+import { removeRoom } from "./removeUserRooms"
 
 export const createRoom = (ws: WebSocket) => {
     const id = uuidv4()
@@ -12,15 +12,13 @@ export const createRoom = (ws: WebSocket) => {
 
     const { name, index } = currUser
 
+    removeRoom(index)
+
     const roomData = {
         roomId: id,
         roomUsers: [{ name, index }],
     }
 
     dbRooms.push(roomData)
-    dbUsers.forEach(user => {
-        if (user.socket) {
-            user.socket.send(messageWrap(JSON.stringify(dbRooms), MessageType.updRooms))
-        }
-    })
+    updateRoomsList()
 }

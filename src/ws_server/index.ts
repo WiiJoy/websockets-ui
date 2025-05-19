@@ -1,6 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import handlers from './handlers/'
 import { dbUsers } from '#/db'
+import { updateRoomsList } from '#/utils/messageUtils'
 
 const port = process.env.WS_PORT || 3000
 
@@ -52,6 +53,8 @@ wss.on('connection', (ws: WebSocket) => {
         const disconnectedUser = dbUsers.find(user => user.socket === ws)
         if (!disconnectedUser) return
         disconnectedUser.socket = null
+        handlers.removeRoom(disconnectedUser.index)
+        updateRoomsList()
         console.log('Disconnected!')
     })
 })
