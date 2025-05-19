@@ -1,6 +1,6 @@
-import { IAttack, IGame, MessageType, StatusType, IPlayerGame } from "#/types"
+import { IAttack, IGame, StatusType, IPlayerGame, IAttackFeedback } from "#/types"
 import { dbGames, dbUsers, dbWinners } from "#/db"
-import { messageWrap } from "#/utils/messageUtils"
+import { sendAttackMessage, sendFinishMessage, turnMessage, updateWinnersList } from "#/utils/messageUtils"
 
 export const attack = (data: string) => {
     console.log('attack!')
@@ -60,19 +60,14 @@ export const randomAttack = (data: string) => {
 }
 
 const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: boolean, enemyData: IPlayerGame, rowData: (string|number)[]) => {
-    const status = isMiss ? setMissStatus(rowData[y] as number) : checkStatus(enemyData, rowData[y] as string)
+    const status = isMiss ? setMissStatus(rowData[y] as number) as ('miss'|'shot'|'killed') : checkStatus(enemyData, rowData[y] as string)
 
-    const data = {
+    const data: IAttackFeedback = {
         position: { x, y },
         currentPlayer: current,
         status
     }
-    game.playersData.forEach((player) => {
-        const currPlayer = dbUsers.find(user => user.index === player.index)
-        if (!currPlayer) return
-
-        currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.attack))
-    })
+    sendAttackMessage(game, data)
     
     if (isMiss) {
         game.currentPlayer = enemyData.index
@@ -80,7 +75,7 @@ const handleShot = (game: IGame, x: number, y: number, current: string, isMiss: 
         if (status === 'shot') rowData[y] = 2
         if (status === 'killed') killedHandle(enemyData, rowData[y] as string, current, game)
     }
-    handleSetTurn(game)
+    turnMessage(game)
 }
 
 const checkStatus = (enemyData: IPlayerGame, target: string) => {
@@ -136,7 +131,7 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
         for (let k = startPosX; k <= endPosX; k++) {
             const isOnShip = checkIsShipPosition(shipXPos, shipYPos, k, i)
 
-            const data = {
+            const data: IAttackFeedback = {
                 position: { x:k, y:i },
                 currentPlayer: current,
                 status: isOnShip ? 'killed' : 'miss'
@@ -150,10 +145,7 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
                 rowData[i] = 3
             }
 
-            game.playersData.forEach((player) => {
-                const currPlayer = dbUsers.find(user => user.index === player.index)
-                currPlayer?.socket?.send(messageWrap(JSON.stringify(data), MessageType.attack))
-            })
+            sendAttackMessage(game, data)
         }
     }
 
@@ -161,13 +153,9 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
 
     if (enemyData.data.count === 0) {
         console.log('set finish', current)
-        let winner: string = ''
-        game.playersData.forEach((player) => {
-            const currPlayer = dbUsers.find(user => user.index === player.index)
-            if (currPlayer?.index === current) winner = currPlayer.name
-            currPlayer?.socket?.send(messageWrap(JSON.stringify({winPlayer:current}), MessageType.finish))
-        })
-        handleWinners(winner)
+        let winUser = dbUsers.find(user => user.index === current)
+        sendFinishMessage(game, current)
+        handleWinners(winUser?.name || 'User')
     }
 }
 
@@ -183,9 +171,7 @@ const handleWinners = (winner: string ) => {
         winnerInList.wins += 1
     }
 
-    dbUsers.forEach(user => {
-        user.socket?.send(messageWrap(JSON.stringify(dbWinners.sort((a, b) => a.wins - b.wins)), MessageType.updWinners))
-    })
+    updateWinnersList()
 }
 
 const checkIsShipPosition = (shipX: [number, number], shipY: [number, number], x:number, y:number): boolean => {
@@ -193,11 +179,4 @@ const checkIsShipPosition = (shipX: [number, number], shipY: [number, number], x
     const checkY = y >= shipY[0] && y <= shipY[1]
 
     return checkX && checkY
-}
-
-const handleSetTurn = (game: IGame) => {
-    game.playersData.forEach((player) => {
-        const currPlayer = dbUsers.find(user => user.index === player.index)
-        currPlayer?.socket?.send(messageWrap(JSON.stringify({currentPlayer:game.currentPlayer}), MessageType.turn))
-    })
 }

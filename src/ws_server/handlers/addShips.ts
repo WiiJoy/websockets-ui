@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
-import { IShip, IPlayerData, IShipData, IGame, IPlayerGame, MessageType } from '#/types'
-import { dbGames, dbUsers } from '#/db'
-import { messageWrap } from '#/utils/messageUtils'
+import { IShip, IPlayerData, IShipData, IPlayerGame } from '#/types'
+import { dbGames } from '#/db'
+import { startGameMessage, turnMessage } from '#/utils/messageUtils'
 
 export const addShips = (data: string) => {
     const shipsData = JSON.parse(data)
@@ -67,8 +67,8 @@ const handleGameData = (idGame: string, player: string, data: IPlayerData) => {
 
     if (currentGame) {
         currentGame.playersData.push(playerData)
-        handleStartGame(currentGame)
-        handleSetTurn(currentGame)
+        startGameMessage(currentGame)
+        turnMessage(currentGame)
     } else {
         dbGames.push({
             idGame,
@@ -76,25 +76,4 @@ const handleGameData = (idGame: string, player: string, data: IPlayerData) => {
             playersData: [playerData]
         })
     }
-}
-
-const handleStartGame = (game: IGame) => {
-    game.playersData.forEach((player) => {
-        const currPlayer = dbUsers.find(user => user.index === player.index)
-        if (!currPlayer) return
-
-        const data = {
-            ships: player.data.ships,
-            currentPlayerIndex: currPlayer.index
-        }
-
-        currPlayer.socket?.send(messageWrap(JSON.stringify(data), MessageType.startGame))
-    })
-}
-
-const handleSetTurn = (game: IGame) => {
-    game.playersData.forEach((player) => {
-        const currPlayer = dbUsers.find(user => user.index === player.index)
-        currPlayer?.socket?.send(messageWrap(JSON.stringify({currentPlayer:game.currentPlayer}), MessageType.turn))
-    })
 }
