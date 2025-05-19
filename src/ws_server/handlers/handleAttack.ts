@@ -124,10 +124,17 @@ const killedHandle = (enemyData: IPlayerGame, target: string, current: string, g
 
     for (let i = startPosY; i <= endPosY; i++) {
         for (let k = startPosX; k <= endPosX; k++) {
+            const isOnShip = checkIsShipPosition(shipXPos, shipYPos, k, i)
+
             const data = {
                 position: { x:k, y:i },
                 currentPlayer: current,
-                status: checkIsShipPosition(shipXPos, shipYPos, k, i) ? 'killed' : 'miss'
+                status: isOnShip ? 'killed' : 'miss'
+            }
+
+            if (!isOnShip) {
+                const rowData = enemyData.data.field[k] as (string|number)[]
+                rowData[i] = 1
             }
 
             game.playersData.forEach((player) => {
